@@ -1,4 +1,6 @@
-﻿namespace Evaluator.Logic;
+﻿using System.Text;
+
+namespace Evaluator.Logic;
 
 public class FunctionEvaluator
 {
@@ -11,19 +13,36 @@ public class FunctionEvaluator
     private static double Calculate(string postfix)
     {
         var stack = new Stack<double>();
+        var numberBuilder = new StringBuilder();
+
         foreach (var item in postfix)
         {
-            if (IsOperator(item))
+            if (char.IsDigit(item) || item == '.')
             {
-                var operator2 = stack.Pop();
-                var operator1 = stack.Pop();
-                stack.Push(Result(operator1, item, operator2));
+                numberBuilder.Append(item);
             }
-            else
+            else if (IsOperator(item) || item == ' ')
             {
-                stack.Push(char.GetNumericValue(item));
+                if (numberBuilder.Length > 0)
+                {
+                    stack.Push(double.Parse(numberBuilder.ToString()));
+                    numberBuilder.Clear();
+                }
+
+                if (IsOperator(item))
+                {
+                    var operator2 = stack.Pop();
+                    var operator1 = stack.Pop();
+                    stack.Push(Result(operator1, item, operator2));
+                }
             }
         }
+
+        if (numberBuilder.Length > 0)
+        {
+            stack.Push(double.Parse(numberBuilder.ToString()));
+        }
+
         return stack.Pop();
     }
 
@@ -43,49 +62,74 @@ public class FunctionEvaluator
     private static string ToPostfix(string infix)
     {
         var stack = new Stack<char>();
-        var postfix = string.Empty;
+        var postfix = new StringBuilder();
+        var numberBuilder = new StringBuilder();
+
         foreach (var item in infix)
         {
-            if (IsOperator(item))
+            if (char.IsDigit(item) || item == '.')
             {
-                if (stack.Count == 0)
+                numberBuilder.Append(item);
+            }
+            else if (IsOperator(item) || item == ' ' || item == '(' || item == ')')
+            {
+                if (numberBuilder.Length > 0)
                 {
-                    stack.Push(item);
+                    postfix.Append(numberBuilder.ToString()).Append(' ');
+                    numberBuilder.Clear();
                 }
-                else
+
+                if (IsOperator(item))
                 {
-                    if (item == ')')
+                    if (stack.Count == 0)
                     {
-                        do
-                        {
-                            postfix += stack.Pop();
-                        } while (stack.Peek() != '(');
-                        stack.Pop();
+                        stack.Push(item);
                     }
                     else
                     {
-                        if (PriorityExpression(item) > PriorityStack(stack.Peek()))
+                        if (item == ')')
                         {
-                            stack.Push(item);
+                            while (stack.Peek() != '(')
+                            {
+                                postfix.Append(stack.Pop()).Append(' ');
+                            }
+                            stack.Pop(); // Quitar el '('
                         }
                         else
                         {
-                            postfix += stack.Pop();
-                            stack.Push(item);
+                            if (item == '(')
+                            {
+                                stack.Push(item);
+                            }
+                            else if (PriorityExpression(item) > PriorityStack(stack.Peek()))
+                            {
+                                stack.Push(item);
+                            }
+                            else
+                            {
+                                while (stack.Count > 0 && PriorityExpression(item) <= PriorityStack(stack.Peek()))
+                                {
+                                    postfix.Append(stack.Pop()).Append(' ');
+                                }
+                                stack.Push(item);
+                            }
                         }
                     }
                 }
             }
-            else
-            {
-                postfix += item;
-            }
         }
-        do
+
+        if (numberBuilder.Length > 0)
         {
-            postfix += stack.Pop();
-        } while (stack.Count > 0);
-        return postfix;
+            postfix.Append(numberBuilder.ToString()).Append(' ');
+        }
+
+        while (stack.Count > 0)
+        {
+            postfix.Append(stack.Pop()).Append(' ');
+        }
+
+        return postfix.ToString().Trim();
     }
 
     private static int PriorityStack(char item)
