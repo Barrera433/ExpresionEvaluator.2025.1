@@ -9,10 +9,7 @@ namespace Evaluator.UI.Windows
             InitializeComponent();
         }
 
-        private void button17_Click(object sender, EventArgs e)
-        {
-
-        }
+       
 
         private void btn7_Click(object sender, EventArgs e)
         {
@@ -96,6 +93,12 @@ namespace Evaluator.UI.Windows
         private void btnCloseParenthesis_Click(object sender, EventArgs e)
         {
             textDisplay.Text += ")";
+
+        }
+
+        private void button17_Click(object sender, EventArgs e)
+        {
+            textDisplay.Text += "*";
         }
 
         private void btnDelete_Click(object sender, EventArgs e)

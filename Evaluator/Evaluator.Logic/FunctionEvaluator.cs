@@ -93,7 +93,7 @@ public class FunctionEvaluator
                             {
                                 postfix.Append(stack.Pop()).Append(' ');
                             }
-                            stack.Pop(); // Quitar el '('
+                            stack.Pop(); 
                         }
                         else
                         {
@@ -160,5 +160,5 @@ public class FunctionEvaluator
         };
     }
 
-    private static bool IsOperator(char item) => "()^*/+-".IndexOf(item) >= 0;
+    private static bool IsOperator(char item) => "()^*/+-.".IndexOf(item) >= 0;
 }
